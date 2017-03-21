@@ -9,6 +9,7 @@ var port = process.env.PORT || 8080;
 
 var server = require('http').createServer(app).listen(port);
 var mongoose = require('mongoose');
+mongoose.set('debug',true);
 var config  = require('./config');
 var db      = mongoose.connect(config.database);
 var People     = require('./models/personas');
