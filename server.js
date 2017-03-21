@@ -16,12 +16,7 @@ var User     = require('./models/users');
 var LogsP     = require('.//models/logsP');
 var Logs     = require('./models/logs');
 
-
-var corsOptions = {
-  origin: 'http://localhost:4200',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.set('superSecret', config.secret);
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
