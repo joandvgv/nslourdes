@@ -21,8 +21,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
-app.use(morgan('dev'));
-
 console.log(mongoose.connection.readyState);
 
 app.post('/api/user', function (req, res) {
@@ -156,16 +154,6 @@ app.get('/api/onCampus/count', function (req, res) {
         } else {
             res.json({info: 'No people on campus with status:'});
         }
-    });
-});
-
-app.get('/api/logs/persona', function (req, res) {
-    LogsP.find((err, LogsP) => {
-        if (err) {
-            res.json({info: 'error during find Users', error: err});
-        };
-        res.json(LogsP);
-
     });
 });
 

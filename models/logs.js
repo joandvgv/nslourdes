@@ -9,6 +9,6 @@ var logsSchema   = new Schema({
     op: String
 });
 
-module.exports = mongoose.model('logs', logsSchema);
+module.exports = mongoose.model('logs', logsSchema, 'logs');
 
 
