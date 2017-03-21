@@ -1,6 +1,9 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser')
+var cors = require('cors')
+
+
 
 var port = process.env.PORT || 8080;
 
@@ -14,6 +17,11 @@ var LogsP     = require('.//models/logsP');
 var Logs     = require('./models/logs');
 
 
+var corsOptions = {
+  origin: 'https://acseg.heroku.com',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
 
 app.set('superSecret', config.secret);
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
@@ -21,7 +29,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
-console.log(mongoose.connection.readyState);
 
 app.post('/api/user', function (req, res) {
     var newUser = new User(req.body);
