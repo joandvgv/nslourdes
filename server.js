@@ -8,7 +8,6 @@ var server = require('http').createServer(app).listen(port);
 var mongoose = require('mongoose');
 var config  = require('./config');
 var db      = mongoose.connect(config.database);
-var morgan  = require('morgan');
 var People     = require('./models/personas');
 var User     = require('./models/users');
 var LogsP     = require('.//models/logsP');
