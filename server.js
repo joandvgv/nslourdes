@@ -70,7 +70,6 @@ app.get('/', function(req, res) {
   });
 
    app.get('/api/logs/hour', function(req, res) {
-   date = new Date().getHours();
    dateM = new Date().getMonth();
    dateD = new Date().getDate();
    var month;
@@ -80,8 +79,7 @@ app.get('/', function(req, res) {
    var hour;
    var month;
    var day = "" + dateD;
-   hour = ""+date+":";
-   var query = {hora: {$regex: hour}, month: month, day: day};
+   var query = {month: month, day: day};
     LogsP.count(query,function(err, count) {
       if(err) return console.error(err);
       res.json(count);
