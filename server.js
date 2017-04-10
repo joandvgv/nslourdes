@@ -1,19 +1,20 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser')
-var cors = require('cors')
-var morgan = require('morgan');
-var jwt = require('jsonwebtoken');
-var bcrypt = require('bcrypt');
-const saltRounds = 10;
-
-var port = process.env.PORT || 8080;
-
-var server = require('http').createServer(app).listen(port);
-var mongoose = require('mongoose');
-mongoose.set('debug', true);
-var config = require('./config');
-var db = mongoose.connect(config.database);
+{
+    "sync.gist": "8f52c8356a3f2e2b888b2c81a743861b",
+    "sync.lastUpload": "",
+    "sync.autoDownload": false,
+    "sync.autoUpload": true,
+    "sync.lastDownload": "2017-03-25T13:57:54.938Z",
+    "sync.version": 261,
+    "sync.showSummary": true,
+    "sync.forceDownload": false,
+    "sync.anonymousGist": false,
+    "sync.host": "",
+    "sync.pathPrefix": "",
+    "workbench.iconTheme": "vs-minimal",
+    "window.zoomLevel": 1,
+    "workbench.colorTheme": "One Dark"
+}
+ar db = mongoose.connect(config.database);
 var Coord = require('./models/coordinadores');
 var Notas = require('./models/notas');
 var Teacher = require('./models/profesores');
@@ -92,45 +93,38 @@ app.post('/api/authenticate', function(req, res) {
 });
 
 
-app.post('/api/user', function(req, res) {
-    var type = req.body.type;
-    var Model;
-    switch (type) {
-        case "Profesor":
-            Model = Teacher;
-            break;
-        case "Coordinador":
-            Model = Coord;
-            break;
-        case "Representante":
-            Model = Father;
-            break;
-        default:
-            Model = "";
-    }
-    if (Model === "") {
-        res.json({ succes: false, message: 'Creation failed. User type not found' });
-    } else {
-        bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
-            req.body.password = hash;
-            var newUser = new Model(req.body);
-            newUser.save((err) => {
-                if (err) {
-                    res.json({ info: 'error during User create', error: err });
-                }
-                res.json({ info: 'User saved successfully', data: newUser });
-            });
-        });
-    }
-
-    /*
+app.post('/api/coord', function(req, res) {
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        req.body.password = hash;
+        var newUser = new Coord(req.body);
         newUser.save((err) => {
             if (err) {
                 res.json({ info: 'error during User create', error: err });
             }
             res.json({ info: 'User saved successfully', data: newUser });
-        }); */
+        });
+    });
 });
+
+app.post('/api/student', function(req, res) {
+    // bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    //    req.body.password = hash;
+    var newStudent = new Student(req.body);
+    newStudent.save((err) => {
+        if (err) {
+            res.json({ info: 'error during Student create', error: err });
+        }
+        res.json({ info: 'Student saved successfully', data: newUser });
+    });
+
+    var seccion = new Seccion({
+        nombre = req.body.seccion,
+
+    });
+
+    //  });
+});
+
 
 
 
