@@ -1,29 +1,28 @@
-{
-    "sync.gist": "8f52c8356a3f2e2b888b2c81a743861b",
-    "sync.lastUpload": "",
-    "sync.autoDownload": false,
-    "sync.autoUpload": true,
-    "sync.lastDownload": "2017-03-25T13:57:54.938Z",
-    "sync.version": 261,
-    "sync.showSummary": true,
-    "sync.forceDownload": false,
-    "sync.anonymousGist": false,
-    "sync.host": "",
-    "sync.pathPrefix": "",
-    "workbench.iconTheme": "vs-minimal",
-    "window.zoomLevel": 1,
-    "workbench.colorTheme": "One Dark"
-}
-ar db = mongoose.connect(config.database);
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser')
+var cors = require('cors')
+var morgan = require('morgan');
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+var port = process.env.PORT || 8080;
+
+var server = require('http').createServer(app).listen(port);
+var mongoose = require('mongoose');
+mongoose.set('debug', true);
+var config = require('./config');
+var db = mongoose.connect(config.database);
 var Coord = require('./models/coordinadores');
 var Notas = require('./models/notas');
 var Teacher = require('./models/profesores');
-var Seccion = require('./models/secciones');
 var Subject = require('./models/materias');
 var Student = require('./models/estudiantes');
 var Father = require('./models/representantes');
 var LogsP = require('.//models/logsP');
 var Logs = require('./models/logs');
+
 
 app.use(cors());
 
@@ -107,35 +106,74 @@ app.post('/api/coord', function(req, res) {
 });
 
 app.post('/api/student', function(req, res) {
-    // bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
-    //    req.body.password = hash;
     var newStudent = new Student(req.body);
     newStudent.save((err) => {
         if (err) {
             res.json({ info: 'error during Student create', error: err });
         }
-        res.json({ info: 'Student saved successfully', data: newUser });
     });
-
-    var seccion = new Seccion({
-        nombre = req.body.seccion,
-
+    var query = { correo: req.body.correo };
+    Father.findOneAndUpdate(query, { $push: { students: newStudent._id } }, function(err, father) {
+        if (err) {
+            res.json({ info: 'error during find Father Student created', error: err, student: newStudent });
+        };
+        if (father) {
+            res.json({ info: 'Student saved & Father updated successfully', father: father, student: newStudent });
+        } else {
+            res.json({ info: 'Father not found with email:' + req.body.email });
+        }
     });
+});
 
-    //  });
+app.post('/api/father/update', function(req, res) {
+    Father.findOneAndUpdate(query, { $push: { students: req.body._id } }, function(err, father) {
+        if (err) {
+            res.json({ info: 'error during find Father', error: err, student: newStudent });
+        };
+        if (father) {
+            res.json({ info: 'Father updated successfully', father: father, student: newStudent });
+        } else {
+            res.json({ info: 'Father not found with email:' + req.body.email });
+        }
+    });
+});
+
+app.post('/api/father', function(req, res) {
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        req.body.password = hash;
+        var newFather = new Father(req.body);
+        newFather.save((err) => {
+            if (err) {
+                res.json({ info: 'error during Father create', error: err });
+            }
+            res.json({ info: 'Father saved successfully', data: newFather });
+        });
+    });
 });
 
 
 
 
-/* Read all */
-app.get('/api/user', function(req, res) {
-    User.find(function(err, users) {
-        if (err)
-            res.send(err);
 
-        res.json(users);
-    });
+/* Read all */
+app.get('/api/father', function(req, res) {
+    Father.find()
+        .populate('students')
+        .exec(function(err, fathers) {
+            if (err)
+                res.send(err);
+            res.json(fathers);
+        });
+});
+
+app.get('/api/father/:correo', function(req, res) {
+    Father.findOne({ correo: req.params.correo })
+        .populate('students')
+        .exec(function(err, fathers) {
+            if (err)
+                res.send(err);
+            res.json(fathers);
+        });
 });
 
 

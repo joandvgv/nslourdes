@@ -8,7 +8,7 @@ var FatherSchema = new Schema({
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
     username: String,
     password: String,
-    moroso: Boolean
+    moroso: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Father', FatherSchema, 'representantes');
