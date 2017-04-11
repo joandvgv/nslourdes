@@ -6,6 +6,18 @@ var morgan = require('morgan');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcrypt');
 const saltRounds = 10;
+const nodemailer = require('nodemailer');
+
+let transporter = nodemailer.createTransport({
+    host: 'smtp.zoho.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: 'nslourdes@zoho.com',
+        pass: 'Jonixxla5'
+    }
+});
+
 
 var port = process.env.PORT || 8080;
 
@@ -91,6 +103,46 @@ app.post('/api/authenticate', function(req, res) {
     }
 });
 
+app.post('/api/mail', function(req, res) {
+    var data = req.body;
+    transporter.sendMail({
+            from: 'nslourdes@zoho.com',
+            to: data.correos,
+            subject: data.tag + ' Notificación :' + data.title,
+            text: "Estimado/a " + data.pref + " " + data.name + ", " + data.txt
+        },
+        (error, info) => {
+            if (error) {
+                res.json({ info: 'error during sending mail' });
+            }
+            console.log('Message %s sent: %s', info.messageId, info.response);
+        });
+    res.json(data);
+});
+
+app.post('/api/broadcast', function(req, res) {
+    var data = req.body;
+    Father.find()
+        .exec(function(err, fathers) {
+            if (err)
+                res.send(err);
+            fathers.forEach(function(father) {
+                transporter.sendMail({
+                        from: 'nslourdes@zoho.com',
+                        to: father.correo,
+                        subject: data.tag + ' Notificación: ' + data.title,
+                        text: "Estimado/a " + father.pref + " " + father.nombre + ", " + data.txt
+                    },
+                    (error, info) => {
+                        if (error) {
+                            res.json({ info: 'error during sending mail' });
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
+                    });
+                res.json(data);
+            });
+        });
+});
 
 app.post('/api/coord', function(req, res) {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
@@ -151,10 +203,6 @@ app.post('/api/father', function(req, res) {
     });
 });
 
-
-
-
-
 /* Read all */
 app.get('/api/father', function(req, res) {
     Father.find()
@@ -180,232 +228,6 @@ app.get('/api/father/:correo', function(req, res) {
 
 app.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
-});
-
-
-// count all
-app.get('/api/logs/month', function(req, res) {
-    date = new Date().getMonth();
-    var month;
-    var datePlusOne;
-    datePlusOne = date + 1;
-    month = "" + datePlusOne;
-    var query = { month: month };
-    LogsP.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-app.get('/api/logs/hour', function(req, res) {
-    dateM = new Date().getMonth();
-    dateD = new Date().getDate();
-    var month;
-    var datePlusOne;
-    datePlusOne = dateM + 1;
-    month = "" + datePlusOne;
-    var hour;
-    var month;
-    var day = "" + dateD;
-    var query = { month: month, day: day };
-    LogsP.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-
-
-/* Find one */
-app.get('/api/user/:username', function(req, res) {
-    var query = { username: req.params.username };
-    User.findOne(query, function(err, User) {
-        if (err) {
-            res.json({ info: 'error during find User', error: err });
-        };
-        if (User) {
-            res.json({ info: 'User found successfully', data: User });
-        } else {
-            res.json({ info: 'User not found with name:' + req.params.name });
-        }
-    });
-});
-
-/* Find one */
-app.get('/api/persona/:cedula', function(req, res) {
-    var query = { CI: req.params.cedula, enCampus: true };
-    People.findOne(query, function(err, User) {
-        if (err) {
-            res.json({ info: 'error during find persona', error: err });
-        };
-        if (User) {
-            res.json({ info: 'User found successfully', data: User });
-        } else {
-            res.json({ info: 'User not found with name:' + req.params.cedula });
-        }
-    });
-});
-
-
-
-
-
-
-/* Find one */
-app.get('/api/login/', function(req, res) {
-    var query = { username: req.params.username };
-    User.findOne(query, function(err, User) {
-        if (err) {
-            res.json({ info: 'error during find User', error: err });
-        };
-        if (User) {
-            res.json({ info: 'User found successfully', data: User });
-        } else {
-            res.json({ info: 'User not found with username:' + req.params.username });
-        }
-    });
-});
-
-app.get('/api/onCampus/', function(req, res) {
-    var query = { enCampus: true };
-    People.find(query, function(err, People) {
-        if (err) {
-            res.json({ info: 'Error finding people on campus', error: err });
-        };
-        if (People) {
-            res.json({ info: 'Usuarios encontrados', data: People });
-        } else {
-            res.json({ info: 'No people on campus with status:' });
-        }
-    });
-});
-
-app.get('/api/onCampus/count', function(req, res) {
-    var query = { enCampus: true };
-    People.count(query, function(err, People) {
-        if (err) {
-            res.json({ info: 'Error finding people on campus', error: err });
-        };
-        if (People) {
-            res.json(People);
-        } else {
-            res.json({ info: 'No people on campus with status:' });
-        }
-    });
-});
-
-app.get('/api/logs/persona', function(req, res) {
-    LogsP.find((err, LogsP) => {
-        if (err) {
-            res.json({ info: 'error during find Users', error: err });
-        };
-        res.json(LogsP);
-
-    });
-});
-
-
-app.get('/api/logs/vehiculo', function(req, res) {
-    Logs.find((err, Logs) => {
-        if (err) {
-            res.json({ info: 'error during find Users', error: err });
-        };
-        res.json(Logs);
-    });
-});
-
-app.get('/api/statistics/psede/:sede', function(req, res) {
-    var query = { sede: req.params.sede, enCampus: true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-app.get('/api/statistics/pcarrera/:carrera', function(req, res) {
-    var query = { carrera: req.params.carrera, enCampus: true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-app.get('/api/statistics/pcarrerap/:carrera', function(req, res) {
-    var query = { carrera: req.params.carrera, enCampus: true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        var query2 = { enCampus: true };
-        People.count(query2, function(error, total) {
-            if (error) return console.error(err);
-            res.json(Math.round((count / total) * 100) + "%");
-        });
-    });
-
-
-});
-
-
-app.get('/api/statistics/vcarrerap/:carrera', function(req, res) {
-    var query = { carrera: req.params.carrera, "vehiculo.venCampus": true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        var query2 = { "vehiculo.venCampus": true };
-        People.count(query2, function(error, total) {
-            if (error) return console.error(err);
-            res.json(Math.round((count / total) * 100) + "%");
-        });
-    });
-
-
-});
-
-
-app.get('/api/statistics/vcarrera/:carrera', function(req, res) {
-    var query = { carrera: req.params.carrera, "vehiculo.venCampus": true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-app.get('/api/statistics/onCampus/vehicles', function(req, res) {
-    var query = { "vehiculo.venCampus": true };
-    People.count(query, function(err, count) {
-        if (err) return console.error(err);
-        res.json(count);
-    });
-});
-
-
-app.post('/api/authuser/', function(request, response) {
-    User.findOne({
-        username: request.body.username
-    }, function(error, usr) {
-        if (error) { console.log('Some error  occured '); }
-        if (!usr) {
-            response.json({
-                authsuccess: false,
-                description: 'User Authentication failed because user not found.'
-            });
-        } else if (usr) {
-            if (usr.password != request.body.password) {
-                response.json({
-                    authsuccess: false,
-                    description: 'User Authentication failed because provided password is wrong.'
-                });
-            } else {
-                response.json({
-                    authsuccess: true,
-                    description: 'Sending the Access Token'
-                        //  accessToken: accessToken
-                });
-                console.log('Authentication is done successfully.....');
-            }
-
-        }
-
-
-    });
 });
 
 app.get('/api/test', function(req, res) {

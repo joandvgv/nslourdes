@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 var FatherSchema = new Schema({
     nombre: String,
+    pref: String,
     correo: String,
     telf: String,
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
